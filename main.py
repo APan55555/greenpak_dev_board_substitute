@@ -1,3 +1,6 @@
+import serial
+from time import sleep
+
 __name__ = 'main'
 
 if __name__ == 'main':
@@ -8,7 +11,6 @@ if __name__ == 'main':
 
     bits = []
     for line in mem_lines:
-        print(line)
         bit = 0
         counter = len(line) - 1
         while counter > 0:
@@ -31,5 +33,20 @@ if __name__ == 'main':
         mem_bytes.append(mem_byte)
         counter += 8
 
-    for mem_byte in mem_bytes:
-        print(bin(mem_byte))
+    ser = serial.Serial("COM6", 9600)
+    ser.setDTR()
+    for byte in mem_bytes:
+        while ser.in_waiting == 0:
+            ser.write((str(byte) + "\n").encode("raw_unicode_escape"))
+            sleep(0.001)
+        ser.read()
+
+    print('thing')
+
+    for byte in mem_bytes:
+        while ser.in_waiting == 0:
+            pass
+        sleep(0.001)
+        byte_back = int(ser.readline().strip())
+        if byte_back != byte:
+            print("bad")
