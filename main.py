@@ -33,12 +33,17 @@ if __name__ == 'main':
         mem_bytes.append(mem_byte)
         counter += 8
 
-    ser = serial.Serial("COM6", 9600)
+    ser = serial.Serial("COM12", 9600)
     ser.setDTR()
     for byte in mem_bytes:
-        while ser.in_waiting == 0:
+        while True:
+            counter = 0
             ser.write((str(byte) + "\n").encode("raw_unicode_escape"))
-            sleep(0.001)
+            while ser.in_waiting == 0 and counter < 10:
+                counter += 1
+                sleep(0.001)
+            if ser.in_waiting != 0:
+                break
         ser.read()
 
     print('thing')
@@ -49,4 +54,4 @@ if __name__ == 'main':
         sleep(0.001)
         byte_back = int(ser.readline().strip())
         if byte_back != byte:
-            print("bad")
+            print("bad", byte, ':', byte_back)
